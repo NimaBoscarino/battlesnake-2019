@@ -42,7 +42,7 @@ app.post('/move', (request, response) => {
   const {board, you} = request.body
   const {body} = you
   const head = body[0]
-  const {snakes} = board
+  const {snakes, food} = board
 
   const snakesWithoutYou = snakes.filter(snake => {
     return snake.body[0].x !== head.x && snake.body[0].y !== head.y
@@ -50,11 +50,48 @@ app.post('/move', (request, response) => {
 
   const possibleChoicesWithoutSnakes = getViableChoices(head, body, {height: board.height, width: board.width})
 
-  console.log(possibleChoicesWithoutSnakes)
-
   const possibleChoices = dontHitSnakes(possibleChoicesWithoutSnakes, snakesWithoutYou)
+  const possibleChoiceNames = possibleChoices.map(i => i.name)
 
-  console.log(possibleChoices)
+  const closestFood = foodCloseBy(head, food)
+  console.log('CLOSEST FOOD', closestFood)
+
+  if (closestFood) {
+    // move towards food!
+    let x = closestFood.x - head.x
+    let y = head.y - closestFood.y // reversed y axis
+
+    const data = {}
+
+    if (Math.abs(x) > Math.abs(y)) {
+      if (x > 0) {
+        data.move = 'right'
+      } else {
+        data.move = 'left'
+      }
+    } else {
+      if (y > 0) {
+        data.move = 'up'
+      } else {
+        data.move = 'down'
+      }
+    }
+    console.log('SNAKE FOOD!')
+
+    if (!possibleChoiceNames.includes(data.move)) {
+      const move = randomValidMove(possibleChoiceNames)
+      const data = { move }
+      return response.json(data)
+
+    } else {
+      return response.json(data)
+    }
+
+  } else {
+    const move = randomValidMove(possibleChoiceNames)
+    const data = { move }
+    return response.json(data)
+  }
   
   // // am I the biggest?
   // const biggest = isBiggest(body, snakesWithoutYou)
@@ -65,19 +102,32 @@ app.post('/move', (request, response) => {
   // } else {
   // // if not biggest, eat!
 
-
   // }
 
   // random!
-  var move = possibleChoices[Math.floor(Math.random()*possibleChoices.length)];
 
    // Response data
-  const data = {
-    move: move.name
-  }
-
-  return response.json(data)
 })
+
+function randomValidMove(choices) {
+  return choices[Math.floor(Math.random()*choices.length)];
+}
+
+function foodCloseBy(head, food) {
+  const sortedFood = food.sort((a, b) => {
+    return (Math.abs((b.x - head.x)) + Math.abs(b.y - head.y)) - (Math.abs(a.x - head.x) + Math.abs(a.y - head.y))
+  })
+
+  if (sortedFood.length > 0) {
+    if ((Math.abs(sortedFood[0].x - head.x) + Math.abs(sortedFood[0].x - head.x)) < 6) {
+      return sortedFood[0]
+    } else {
+      return undefined
+    }
+  } else {
+    return false
+  }
+}
 
 // doesn't account for head-on-head collisions
 function dontHitSnakes(options, snakes) {
