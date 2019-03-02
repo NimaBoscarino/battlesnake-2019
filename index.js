@@ -39,13 +39,31 @@ app.post('/start', (request, response) => {
 app.post('/move', (request, response) => {
   // NOTE: Do something here to generate your move
 
-  const body = request.body.you.body
+  const {board, you} = request.body
+  const {body} = you
   const head = body[0]
-  const board = request.body.board
+  const {snakes} = board
 
-  const possibleChoices = getViableChoices(head, body, {height: board.height, width: board.width})
+  const snakesWithoutYou = snakes.filter(snake => {
+    return snake.body[0].x !== head.x && snake.body[0].y !== head.y
+  })
 
-  
+  const possibleChoicesWithoutSnakes = getViableChoices(head, body, {height: board.height, width: board.width})
+
+  const possibleChoices = dontHitSnakes(possibleChoicesWithoutSnakes, snakesWithoutYou)
+
+  // am I the biggest?
+  const biggest = isBiggest(body, snakesWithoutYou)
+
+  if (biggest) {
+  // if biggest, go for snake heads!
+
+  } else {
+  // if not biggest, eat!
+
+  }
+
+  // random!
   var move = possibleChoices[Math.floor(Math.random()*possibleChoices.length)];
 
    // Response data
@@ -55,6 +73,17 @@ app.post('/move', (request, response) => {
 
   return response.json(data)
 })
+
+function dontHitSnakes(choices, snakes) {
+  return choices
+} 
+
+function isBiggest(body, snakes) {
+  return snakes.reduce((acc, curr) => {
+    console.log('lenght', body.length, curr.body.length, body.length > curr.body.length)
+    return acc && (body.length > curr.body.length)
+  }, true)
+}
 
 function getViableChoices(head, body, board) {
 
@@ -69,8 +98,6 @@ function getViableChoices(head, body, board) {
     // {x: head.x - 1, y: head.y - 1},
   ]
 
-  console.log('heyo!')
-
   const mappedBody = body.map(i => `${i.x}_${i.y}`)
 
   const viableWithoutBody = options.filter(i => !mappedBody.includes(`${i.x}_${i.y}`))
@@ -79,7 +106,7 @@ function getViableChoices(head, body, board) {
     return !(i.x === -1 || i.x === board.width - 1 || i.y === -1 || i.y === board.height - 1)
   })
 
-  console.log(viableWithoutWalls, 'heyo!')
+  // console.log(viableWithoutWalls, 'heyo!')
 
   return viableWithoutWalls
 }
