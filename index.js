@@ -115,11 +115,14 @@ function randomValidMove(choices) {
 
 function foodCloseBy(head, food) {
   const sortedFood = food.sort((a, b) => {
-    return (Math.abs((b.x - head.x)) + Math.abs(b.y - head.y)) - (Math.abs(a.x - head.x) + Math.abs(a.y - head.y))
+    return (Math.abs((a.x - head.x)) + Math.abs(a.y - head.y)) - (Math.abs(b.x - head.x) + Math.abs(b.y - head.y))
   })
 
-  if (sortedFood.length > 0) {
-    if ((Math.abs(sortedFood[0].x - head.x) + Math.abs(sortedFood[0].x - head.x)) < 6) {
+  console.log(sortedFood)
+
+  if (sortedFood) {
+    console.log('HEAD', head)
+    if ((Math.abs(sortedFood[0].x - head.x) + Math.abs(sortedFood[0].y - head.y)) < 4) {
       return sortedFood[0]
     } else {
       return undefined
@@ -164,7 +167,7 @@ function getViableChoices(head, body, board) {
   const viableWithoutBody = options.filter(i => !mappedBody.includes(`${i.x}_${i.y}`))
 
   const viableWithoutWalls = viableWithoutBody.filter(i => {
-    return !(i.x === -1 || i.x === board.width - 1 || i.y === -1 || i.y === board.height - 1)
+    return !(i.x === -1 || i.x === board.width || i.y === -1 || i.y === board.height)
   })
 
   // console.log(viableWithoutWalls, 'heyo!')
