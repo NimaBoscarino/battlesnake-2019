@@ -27,7 +27,9 @@ app.post('/start', (request, response) => {
 
   // Response data
   const data = {
-    color: '#DFFF00',
+    color: '#f48342',
+    headType: "silly",
+    tailType: "round-bum"
   }
 
   return response.json(data)
@@ -37,13 +39,50 @@ app.post('/start', (request, response) => {
 app.post('/move', (request, response) => {
   // NOTE: Do something here to generate your move
 
-  // Response data
+  const body = request.body.you.body
+  const head = body[0]
+  const board = request.body.board
+
+  const possibleChoices = getViableChoices(head, body, {height: board.height, width: board.width})
+
+  
+  var move = possibleChoices[Math.floor(Math.random()*possibleChoices.length)];
+
+   // Response data
   const data = {
-    move: 'up', // one of: ['up','down','left','right']
+    move: move.name
   }
 
   return response.json(data)
 })
+
+function getViableChoices(head, body, board) {
+
+  const options = [
+    {name: 'left', x: head.x - 1, y: head.y},
+    {name: 'right', x: head.x + 1, y: head.y},
+    {name: 'up', x: head.x, y: head.y - 1},
+    {name: 'down', x: head.x, y: head.y + 1},
+    // {x: head.x + 1, y: head.y + 1},
+    // {x: head.x + 1, y: head.y - 1},
+    // {x: head.x - 1, y: head.y + 1},
+    // {x: head.x - 1, y: head.y - 1},
+  ]
+
+  console.log('heyo!')
+
+  const mappedBody = body.map(i => `${i.x}_${i.y}`)
+
+  const viableWithoutBody = options.filter(i => !mappedBody.includes(`${i.x}_${i.y}`))
+
+  const viableWithoutWalls = viableWithoutBody.filter(i => {
+    return !(i.x === -1 || i.x === board.width - 1 || i.y === -1 || i.y === board.height - 1)
+  })
+
+  console.log(viableWithoutWalls, 'heyo!')
+
+  return viableWithoutWalls
+}
 
 app.post('/end', (request, response) => {
   // NOTE: Any cleanup when a game is complete.
