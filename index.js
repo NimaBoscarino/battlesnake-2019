@@ -50,18 +50,23 @@ app.post('/move', (request, response) => {
 
   const possibleChoicesWithoutSnakes = getViableChoices(head, body, {height: board.height, width: board.width})
 
+  console.log(possibleChoicesWithoutSnakes)
+
   const possibleChoices = dontHitSnakes(possibleChoicesWithoutSnakes, snakesWithoutYou)
 
-  // am I the biggest?
-  const biggest = isBiggest(body, snakesWithoutYou)
+  console.log(possibleChoices)
+  
+  // // am I the biggest?
+  // const biggest = isBiggest(body, snakesWithoutYou)
 
-  if (biggest) {
-  // if biggest, go for snake heads!
+  // if (biggest) {
+  // // if biggest, go for snake heads!
 
-  } else {
-  // if not biggest, eat!
+  // } else {
+  // // if not biggest, eat!
 
-  }
+
+  // }
 
   // random!
   var move = possibleChoices[Math.floor(Math.random()*possibleChoices.length)];
@@ -74,8 +79,14 @@ app.post('/move', (request, response) => {
   return response.json(data)
 })
 
-function dontHitSnakes(choices, snakes) {
-  return choices
+// doesn't account for head-on-head collisions
+function dontHitSnakes(options, snakes) {
+  return options.filter(option => {
+    return snakes.reduce((acc, snake) => {
+      const mappedBody = snake.body.map(i => `${i.x}_${i.y}`)
+      return acc && !mappedBody.includes(`${option.x}_${option.y}`)
+    }, true)
+  })
 } 
 
 function isBiggest(body, snakes) {
